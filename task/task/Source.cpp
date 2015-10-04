@@ -13,5 +13,7 @@ int main(){
 	}
 	std::cout << "\nTo continue, press any key";
 	getchar();
+	getchar();
+	// ddddd
 	return 0;
 }
