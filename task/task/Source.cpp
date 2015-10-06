@@ -31,14 +31,14 @@ int getNumber()
 }
 
 void printArray(int* array) {
-	std::cout << "array={";
+	cout << "array={";
 	for (int i = 0; i < C; i++) {
 		if (i > 0) {
-			std::cout << ",";
+			cout << ",";
 		}
-		std::cout << array[i];
+		cout << array[i];
 	}
-	std::cout << "}\n";
+	cout << "}\n";
 }
 
 void quickSort(int* a, long N) {
@@ -78,9 +78,9 @@ int check(int M, int* array) {
 int main(){
 	int targetArray[C];
 
-	std::srand(std::time(0));
+	srand(time(0));
 	for (int i = 0; i < C; i++) {
-		targetArray[i] = std::rand() % 100 + 1;
+		targetArray[i] = rand() % 100 + 1;
 	}
 	printArray(targetArray);
 	// Идея заключается в следующем:
@@ -89,9 +89,9 @@ int main(){
 	// Поэтому сначала отсортируем массив.
 	quickSort(targetArray, C-1);
 	printArray(targetArray);
-	std::cout << "M=";
+	cout << "M=";
 	int M = getNumber();
-	std::cout << "sum=" << check(M, targetArray) << "\n";
+	cout << "sum=" << check(M, targetArray) << "\n";
 	system("pause");
 	return 0;
 }
