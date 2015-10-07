@@ -45,16 +45,29 @@ void quickSort(int* a, long N) {
 	long i = 0, j = N;
 	int temp, p;
 	p = a[N >> 1];
+
 	do {
-		while (a[i] < p) i++;
-		while (a[j] > p) j--;
+		while (a[i] < p) {
+			i++;
+		}
+		while (a[j] > p) {
+			j--;
+		}		
 		if (i <= j) {
-			temp = a[i]; a[i] = a[j]; a[j] = temp;
-			i++; j--;
+			temp = a[i];
+			a[i] = a[j];
+			a[j] = temp;
+			i++;
+			j--;
 		}
 	} while (i <= j);
-	if (j > 0) quickSort(a, j);
-	if (N > i) quickSort(a + i, N - i);
+	
+	if (j > 0) {
+		quickSort(a, j);
+	}	
+	if (N > i) {
+		quickSort(a + i, N - i);
+	}
 }
 
 int check(int M, int* array) {
