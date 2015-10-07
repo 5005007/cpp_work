@@ -34,6 +34,8 @@ int main() {
 	cout << "n2=";
 	int n2 = getNumber();
 	int sum;
+	cout << "result={";
+	bool needComma = false;
 	for (int i = n1; i < n2; i++) {
 		sum = 0;
 		for (int n = 1; n <= i / 2; n++) {
@@ -42,9 +44,14 @@ int main() {
 			}
 		}
 		if (i == sum) {
-			printf("%d is perfect!\n", i);
+			if (needComma) {
+				cout << ", ";
+			}
+			needComma = true;
+			cout << i;
 		}
 	}
+	cout << "}\n";
 	system("pause");
 	return 0;
 }
