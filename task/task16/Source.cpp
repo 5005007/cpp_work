@@ -31,7 +31,7 @@ int getNumber()
 }
 
 void printArray(int* array) {
-	cout << "array={";
+	cout << "{";
 	for (int i = 0; i < C; i++) {
 		if (i > 0) {
 			cout << ",";
@@ -95,12 +95,14 @@ int main(){
 	for (int i = 0; i < C; i++) {
 		targetArray[i] = rand() % 100 + 1;
 	}
+	cout << "array=";
 	printArray(targetArray);
 	// Идея заключается в следующем:
 	// чтобы использовать в сумме максимальное количество чисел,
 	// необходимо перемножать минимальные элементы массива.
 	// Поэтому сначала отсортируем массив.
 	quickSort(targetArray, C-1);
+	cout << "sort=";
 	printArray(targetArray);
 	cout << "M=";
 	int M = getNumber();
