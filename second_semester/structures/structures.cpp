@@ -31,6 +31,37 @@ struct student
 	char rate[5];
 } s;
 
+int test(char ch)
+{
+	char numbers[10] = { '0','1','2','3','4','5','6','7','8','9' };
+	for (unsigned int i = 0; i < 10; i++)
+	{
+		if (numbers[i] == ch)
+		{
+			return (int)((char)ch - '0');
+		}
+	}
+	return -1;
+}
+
+void clearScreen()
+{
+	if (system("CLS")) system("clear");
+}
+
+int getNumber()
+{
+	printf("1) Add student\n");
+	printf("2) Show students\n");
+	printf("3) Edit student\n");
+	printf("4) Search student\n");
+	printf("5) Sort students\n");
+	printf("6) Delete student\n");
+	printf("0) Exit\n");
+	printf("Please enter choice:");
+	return test(_getch());
+}
+
 student fillStudent()
 {
 	student stud;
@@ -67,6 +98,38 @@ FILE* openFile(char* mode)
 	return f;
 }
 
+student* readFile(FILE* file, int size)
+{
+	student* list = NULL;
+	if (size > 0)
+	{
+		list = (student *)malloc(size * sizeof(student));
+		for (int i = 0; i < size; i++)
+		{
+			fread(&s, sizeof(student), 1, file);
+			list[i] = s;
+		}
+		rewind(file);
+	}
+	return list;
+}
+
+int showStudents()
+{
+	FILE* file;
+	if (file = openFile("rb"))
+	{
+		int size = calcFileStructs(file);
+		student* list = readFile(file, size);
+		for (int i = 0; i < size; i++)
+		{
+			printf("%d) %s %s %s %s %.10s %.5s\n", i + 1, list[i].lastName, list[i].firstName, list[i].middleName, list[i].address, list[i].group, list[i].rate);
+		}
+		fclose(file);
+	}
+	return 1;
+}
+
 int editStudent()
 {
 	showStudents();
@@ -100,69 +163,6 @@ int addStudent()
 		return 1;
 	}
 	return 0;
-}
-
-student* readFile(FILE* file, int size)
-{
-	student* list = NULL;
-	if (size > 0)
-	{
-		list = (student *)malloc(size * sizeof(student));
-		for (int i = 0; i < size; i++)
-		{
-			fread(&s, sizeof(student), 1, file);
-			list[i] = s;
-		}
-		rewind(file);
-	}
-	return list;
-}
-
-int showStudents()
-{
-	FILE* file;
-	if (file = openFile("rb"))
-	{
-		int size = calcFileStructs(file);
-		student* list = readFile(file, size);
-		for (int i = 0; i < size; i++)
-		{
-			printf("%d) %s %s %s %s %.10s %.5s\n", i + 1, list[i].lastName, list[i].firstName, list[i].middleName, list[i].address, list[i].group, list[i].rate);
-		}
-		fclose(file);
-	}
-	return 1;
-}
-
-int test(char ch)
-{
-	char numbers[10] = { '0','1','2','3','4','5','6','7','8','9' };
-	for (unsigned int i = 0; i < 10; i++)
-	{
-		if (numbers[i] == ch)
-		{
-			return (int)((char)ch - '0');
-		}
-	}
-	return -1;
-}
-
-void clearScreen()
-{
-	if (system("CLS")) system("clear");
-}
-
-int getNumber()
-{
-	printf("1) Add student\n");
-	printf("2) Show students\n");
-	printf("3) Edit student\n");
-	printf("4) Search student\n");
-	printf("5) Sort students\n");
-	printf("6) Delete student\n");
-	printf("0) Exit\n");
-	printf("Please enter choice:");
-	return test(_getch());
 }
 
 int main()
