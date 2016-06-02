@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define datname "students.dat"
+
 /*
 
 Осуществить запись и считывание структур из файла.
@@ -23,13 +25,13 @@
 
 struct student
 {
-	char firstName[30];
-	char lastName[30];
-	char middleName[30];
-	char address[30];
-	char group[10];
-	char rate[5];
-} s;
+	char firstName[125];
+	char lastName[125];
+	char middleName[125];
+	char address[125];
+	char group[125];
+	char rate[125];
+};
 
 int test(char ch)
 {
@@ -46,7 +48,10 @@ int test(char ch)
 
 void clearScreen()
 {
-	if (system("CLS")) system("clear");
+	if (system("CLS"))
+	{
+		system("clear");
+	}
 }
 
 int getNumber()
@@ -80,18 +85,16 @@ student fillStudent()
 	return stud;
 }
 
-int calcFileStructs(FILE* file)
+int file_exist(char *filename)
 {
-	fseek(file, 0, 2);
-	int n = ftell(file) / sizeof(student);
-	rewind(file);
-	return n;
+	struct stat buffer;
+	return (stat(filename, &buffer) == 0);
 }
 
 FILE* openFile(char* mode)
 {
 	FILE* f = NULL;
-	if (!(f = fopen("students", mode)))
+	if (!(f = fopen(datname, mode)))
 	{
 		printf("Error while file creating\n");
 	}
@@ -101,41 +104,80 @@ FILE* openFile(char* mode)
 student* readFile(FILE* file, int size)
 {
 	student* list = NULL;
+	student stud;
 	if (size > 0)
 	{
 		list = (student *)malloc(size * sizeof(student));
 		for (int i = 0; i < size; i++)
 		{
-			fread(&s, sizeof(student), 1, file);
-			list[i] = s;
+			fread(&stud, sizeof(student), 1, file);
+			list[i] = stud;
 		}
 		rewind(file);
 	}
 	return list;
 }
 
-int showStudents()
+
+int calcFileStructs()
 {
-	FILE* file;
-	if (file = openFile("rb"))
+	int size = 0;
+	if (FILE* file = openFile("rb"))
 	{
-		int size = calcFileStructs(file);
-		student* list = readFile(file, size);
+		fseek(file, 0, 2);
+		size = ftell(file) / sizeof(student);
+		fclose(file);
+	}
+	return size;
+}
+
+
+student* showStudents()
+{
+	student* list;
+	if (FILE* file = openFile("rb"))
+	{
+		int size = calcFileStructs();
+		list = readFile(file, size);
 		for (int i = 0; i < size; i++)
 		{
 			printf("%d) %s %s %s %s %.10s %.5s\n", i + 1, list[i].lastName, list[i].firstName, list[i].middleName, list[i].address, list[i].group, list[i].rate);
 		}
 		fclose(file);
 	}
-	return 1;
+	return list;
+}
+
+void editStruct(student* stud)
+{
+	student newStud = fillStudent();
+	strcpy(stud->firstName, newStud.firstName);
+	strcpy(stud->group, newStud.group);
+	strcpy(stud->lastName, newStud.lastName);
+	strcpy(stud->middleName, newStud.middleName);
+	strcpy(stud->rate, newStud.rate);
+	strcpy(stud->address, newStud.address);
 }
 
 int editStudent()
 {
-	showStudents();
-	printf("Select student: ");
-	int n = getNumber();
-
+start:
+	student* list = showStudents();
+	printf("Select student to edit: ");
+	int n = test(_getch());
+	clearScreen();
+	int size = calcFileStructs();
+	if (n < 1 || n > size)
+	{
+		printf("Selected student does not exist\n");
+		goto start;
+	}
+	editStruct(&list[n - 1]);
+	if (FILE* file = openFile("wb"))
+	{
+		fwrite(list, size, sizeof(student), file);
+		fclose(file);
+	}
 	return 0;
 }
 
@@ -165,8 +207,17 @@ int addStudent()
 	return 0;
 }
 
+void checkOrCreateFile()
+{
+	if (!file_exist(datname))
+	{
+		fclose(openFile("wb"));
+	}
+}
+
 int main()
 {
+	checkOrCreateFile();
 start:
 	clearScreen();
 	int choice = getNumber();
