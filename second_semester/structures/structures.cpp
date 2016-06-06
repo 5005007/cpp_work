@@ -2,6 +2,7 @@
 #include <conio.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stddef.h>
 
 #define datname "students.dat"
 
@@ -33,15 +34,97 @@ struct student
 	char rate[125];
 };
 
+struct students
+{
+	int size;
+	int selected;
+	student* list;
+};
+
+int compareFirstname(const void* a, const void* b)
+{
+	return strcmp(
+		((struct student *)a)->firstName,
+		((struct student *)b)->firstName
+	);
+}
+
+int compareLastname(const void* a, const void* b)
+{
+	return strcmp(
+		((struct student *)a)->lastName,
+		((struct student *)b)->lastName
+	);
+}
+
+int compareMiddlename(const void* a, const void* b)
+{
+	return strcmp(
+		((struct student *)a)->lastName,
+		((struct student *)b)->lastName
+	);
+}
+
+int compareAddress(const void* a, const void* b)
+{
+	return strcmp(
+		((struct student *)a)->lastName,
+		((struct student *)b)->lastName
+	);
+}
+
+int compareGroup(const void* a, const void* b)
+{
+	return strcmp(
+		((struct student *)a)->lastName,
+		((struct student *)b)->lastName
+	);
+}
+
+int compareRate(const void* a, const void* b)
+{
+	return strcmp(
+		((struct student *)a)->lastName,
+		((struct student *)b)->lastName
+	);
+}
+
+int sortStructs(struct student *structs, size_t count, size_t memberNum)
+{
+	switch ((memberNum - 1) * 125)
+	{
+	case 0:
+		qsort(structs, count, sizeof *structs, compareFirstname);
+		break;
+	case offsetof(struct student, lastName):
+		qsort(structs, count, sizeof *structs, compareLastname);
+		break;
+	case offsetof(struct student, middleName):
+		qsort(structs, count, sizeof *structs, compareMiddlename);
+		break;
+	case offsetof(struct student, address):
+		qsort(structs, count, sizeof *structs, compareAddress);
+		break;
+	case offsetof(struct student, group):
+		qsort(structs, count, sizeof *structs, compareGroup);
+		break;
+	case offsetof(struct student, rate):
+		qsort(structs, count, sizeof *structs, compareRate);
+		break;
+	default:
+		printf("Wrong member num", memberNum);
+		return 0;
+	}
+	return 1;
+}
+
 int test(char ch)
 {
 	char numbers[10] = { '0','1','2','3','4','5','6','7','8','9' };
 	for (unsigned int i = 0; i < 10; i++)
 	{
 		if (numbers[i] == ch)
-		{
 			return (int)((char)ch - '0');
-		}
 	}
 	return -1;
 }
@@ -49,9 +132,7 @@ int test(char ch)
 void clearScreen()
 {
 	if (system("CLS"))
-	{
 		system("clear");
-	}
 }
 
 int getNumber()
@@ -101,51 +182,44 @@ FILE* openFile(char* mode)
 	return f;
 }
 
-student* readFile(FILE* file, int size)
+int calcFileStructs(FILE* file)
 {
-	student* list = NULL;
-	student stud;
-	if (size > 0)
-	{
-		list = (student *)malloc(size * sizeof(student));
-		for (int i = 0; i < size; i++)
-		{
-			fread(&stud, sizeof(student), 1, file);
-			list[i] = stud;
-		}
-		rewind(file);
-	}
-	return list;
-}
-
-
-int calcFileStructs()
-{
-	int size = 0;
-	if (FILE* file = openFile("rb"))
-	{
-		fseek(file, 0, 2);
-		size = ftell(file) / sizeof(student);
-		fclose(file);
-	}
+	fseek(file, 0, 2);
+	int size = ftell(file) / sizeof(student);
+	rewind(file);
 	return size;
 }
 
-
-student* showStudents()
+students readFile()
 {
-	student* list;
+	students result;
 	if (FILE* file = openFile("rb"))
 	{
-		int size = calcFileStructs();
-		list = readFile(file, size);
-		for (int i = 0; i < size; i++)
+		result.size = calcFileStructs(file);
+		if (result.size > 0)
 		{
-			printf("%d) %s %s %s %s %.10s %.5s\n", i + 1, list[i].lastName, list[i].firstName, list[i].middleName, list[i].address, list[i].group, list[i].rate);
+			result.list = (student *)malloc(result.size * sizeof(student));
+			for (int i = 0; i < result.size; i++)
+			{
+				student stud;
+				fread(&stud, sizeof(student), 1, file);
+				result.list[i] = stud;
+			}
 		}
 		fclose(file);
 	}
-	return list;
+	return result;
+}
+
+students showStudents()
+{
+	students stud = readFile();
+	for (int i = 0; i < stud.size; i++)
+	{
+		student s = stud.list[i];
+		printf("%d) %s %s %s %s %.10s %.5s\n", i + 1, s.lastName, s.firstName, s.middleName, s.address, s.group, s.rate);
+	}
+	return stud;
 }
 
 void editStruct(student* stud)
@@ -159,23 +233,42 @@ void editStruct(student* stud)
 	strcpy(stud->address, newStud.address);
 }
 
-int editStudent()
+student* deleteStruct(students stud)
+{
+	int newSize = stud.size - 1;
+	student* list = (student *)malloc(newSize * sizeof(student));
+	for (int i = 0, k = 0; i < newSize; i++, k++)
+	{
+		if (i + 1 != stud.selected || k != i)
+			list[i] = stud.list[k];
+		else
+			i--;
+	}
+	return list;
+}
+
+students seleсtStudent()
 {
 start:
-	student* list = showStudents();
+	students result = showStudents();
 	printf("Select student to edit: ");
-	int n = test(_getch());
+	result.selected = test(_getch());
 	clearScreen();
-	int size = calcFileStructs();
-	if (n < 1 || n > size)
+	if (result.selected < 1 || result.selected > result.size)
 	{
 		printf("Selected student does not exist\n");
 		goto start;
 	}
-	editStruct(&list[n - 1]);
+	return result;
+}
+
+int editStudent()
+{
+	students stud = seleсtStudent();
+	editStruct(&stud.list[stud.selected - 1]);
 	if (FILE* file = openFile("wb"))
 	{
-		fwrite(list, size, sizeof(student), file);
+		fwrite(stud.list, stud.size, sizeof(student), file);
 		fclose(file);
 	}
 	return 0;
@@ -183,16 +276,55 @@ start:
 
 int deleteStudent()
 {
+	students stud = seleсtStudent();
+	student* newList = deleteStruct(stud);
+	if (FILE* file = openFile("wb"))
+	{
+		fwrite(newList, stud.size - 1, sizeof(student), file);
+		fclose(file);
+	}
 	return 0;
 }
 
 int searchStudent()
 {
+	char searchString[125];
+	printf("Enter search string: ");
+	scanf("%s", searchString);
+	students stud = readFile();
+	for (int i = 0; i < stud.size; i++)
+	{
+		student s = stud.list[i];
+		if (strstr(s.firstName, searchString) != NULL ||
+			strstr(s.lastName, searchString) != NULL ||
+			strstr(s.middleName, searchString) != NULL ||
+			strstr(s.address, searchString) != NULL ||
+			strstr(s.group, searchString) != NULL ||
+			strstr(s.rate, searchString) != NULL)
+		{
+			printf("%d) %s %s %s %s %.10s %.5s\n", i + 1, s.lastName, s.firstName, s.middleName, s.address, s.group, s.rate);
+		}
+	}
 	return 0;
 }
 
 int sortStudents()
 {
+	printf("1) First name\n");
+	printf("2) Last name\n");
+	printf("3) Middle name\n");
+	printf("4) Address\n");
+	printf("5) Group\n");
+	printf("6) Rate\n");
+	printf("Enter sorting field: ");
+	int n = test(_getch());
+	students stud = readFile();
+	sortStructs(stud.list, stud.size, n);
+	if (FILE* file = openFile("wb"))
+	{
+		fwrite(stud.list, stud.size, sizeof(student), file);
+		fclose(file);
+	}
 	return 0;
 }
 
@@ -210,9 +342,7 @@ int addStudent()
 void checkOrCreateFile()
 {
 	if (!file_exist(datname))
-	{
 		fclose(openFile("wb"));
-	}
 }
 
 int main()
@@ -240,6 +370,7 @@ start:
 		goto start;
 	case 4:
 		searchStudent();
+		system("pause");
 		goto start;
 	case 5:
 		sortStudents();
