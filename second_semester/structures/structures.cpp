@@ -166,7 +166,7 @@ student fillStudent()
 	return stud;
 }
 
-int file_exist(char *filename)
+int fileExist(char *filename)
 {
 	struct stat buffer;
 	return (stat(filename, &buffer) == 0);
@@ -235,16 +235,12 @@ void editStruct(student* stud)
 
 student* deleteStruct(students stud)
 {
-	int newSize = stud.size - 1;
-	student* list = (student *)malloc(newSize * sizeof(student));
-	for (int i = 0, k = 0; i < newSize; i++, k++)
-	{
-		if (i + 1 != stud.selected || k != i)
-			list[i] = stud.list[k];
-		else
-			i--;
-	}
-	return list;
+	memmove(
+		stud.list + stud.selected,
+		stud.list + (stud.selected + 1),
+		(stud.size - stud.selected) * sizeof(student));
+	stud.list = (student *)realloc(stud.list, (stud.size - 1) * sizeof(student));
+	return stud.list;
 }
 
 students seleсtStudent()
@@ -341,7 +337,7 @@ int addStudent()
 
 void checkOrCreateFile()
 {
-	if (!file_exist(datname))
+	if (!fileExist(datname))
 		fclose(openFile("wb"));
 }
 
